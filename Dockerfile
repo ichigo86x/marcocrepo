@@ -74,5 +74,8 @@ RUN echo 'export PATH' >> /root/.bash_profile
 #AVVIO AUTOMATICO
 RUN chkconfig --level 345 httpd on
 
+#VOLUMES
+VOLUME ["/var/www/html"]
+
 EXPOSE 80
 CMD ["/usr/sbin/init"]
