@@ -21,7 +21,7 @@ RUN yum install httpd-devel
 
 #COPIO SOFTWARE DA COMPILARE
 RUN mkdir /tmp/src
-COPY /root/src/* /tmp/src/
+COPY src/* /tmp/src/
 
 #SABLOT
 RUN cd /tmp/src
