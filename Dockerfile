@@ -1,6 +1,6 @@
 # ASI
 FROM i386/centos:6
-
+ 
 # AGGIORNO E INSTALLO REQUISITI
 RUN sed -i 's/\$arch/i686/g' /etc/yum.repos.d/*
 RUN sed -i 's/\$basearch/i386/g' /etc/yum.repos.d/*
