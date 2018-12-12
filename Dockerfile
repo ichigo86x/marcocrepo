@@ -1,75 +1,69 @@
 # ASI
-FROM centos:6
+FROM i386/centos:6
 
 # AGGIORNO E INSTALLO REQUISITI
+RUN sed -i 's/\$arch/i686/g' /etc/yum.repos.d/*
+RUN sed -i 's/\$basearch/i386/g' /etc/yum.repos.d/*
+
+RUN yum clean all
 RUN yum update -y
-#COMPILAZIONE
-RUN yum install -y gcc*
-RUN yum install -y make
-#SABLOT
-RUN yum install -y expat*
-#PHP
-RUN yum install -y bison*
-RUN yum install -y flex
-RUN yum install -y curl*
-#APACHE
-RUN yum install -y openssl
+
+RUN yum clean all
+RUN yum install -y gcc* make expat* expat bison* flex curl* libcurl* curl-devel* libcurl-devel* openssl 
 
 #INSTALLAZIONE APACHE
-RUN yum install httpd mod_ssl
-RUN yum install httpd-devel
+RUN yum clean all
+RUN yum install -y httpd mod_ssl httpd-devel
 
 #COPIO SOFTWARE DA COMPILARE
 RUN mkdir /tmp/src
-COPY src/* /tmp/src/
+COPY src/Sablot-1.0.3.tar.gz /tmp/src/Sablot-1.0.3.tar.gz
+COPY src/php-4.4.9.tar.gz /tmp/src/php-4.4.9.tar.gz
+COPY src/fop-0.20.5-src.tar.gz /tmp/src/fop-0.20.5-src.tar.gz
+COPY src/j2sdk-1_4_2_12-linux-i586.bin /tmp/src/j2sdk-1_4_2_12-linux-i586.bin
+COPY src/xorg-x11-deprecated-libs-6.8.2-31.i386.rpm /tmp/src/xorg-x11-deprecated-libs-6.8.2-31.i386.rpm
 
 #SABLOT
-RUN cd /tmp/src
-RUN tar xvzf Sablot-1.0.3.tar.gz
-RUN cd Sablot-1.0.3
-RUN ./configure --prefix=/usr/local/sablotron
-RUN make
-RUN make install
-
-# FreeTDS ( MSSQL Lib )
-# RUN cd /tmp
-# RUN tar xvzf freetds-stable.tgz
-# RUN cd freetds-0.64
-# RUN ./configure --prefix=/usr/local/freetds --enable-msdblib
-# RUN make
-# RUN make install
+RUN cd /tmp/src && \
+    tar xvzf Sablot-1.0.3.tar.gz && \
+    cd Sablot-1.0.3 && \
+    ./configure --prefix=/usr/local/sablotron && \
+    make && \
+    make install
 
 #PHP 449
-RUN cd /tmp/src
-RUN tar xvzf php-4.4.9.tar.gz
-RUN cd php-4.4.9
-RUN ./configure --prefix=/usr/local/php-4.4.9 --enable-xslt --with-xslt --with-xslt-sablot=/usr/local/sablotron --with-config-file-path=/usr/local/php-4.4.9 --with-apxs2=/usr/sbin/apxs --enable-trans-sid --enable-calendar --with-mssql=/usr/local/freetds/ --with-curl=/usr/include/curl
-RUN make
-RUN make install
+RUN cd /tmp/src && \
+    tar xvzf php-4.4.9.tar.gz && \
+    cd php-4.4.9 && \
+    ./configure --prefix=/usr/local/php-4.4.9 --enable-xslt --with-xslt --with-xslt-sablot=/usr/local/sablotron --with-config-file-path=/usr/local/php-4.4.9 --with-apxs2=/usr/sbin/apxs --enable-trans-sid --enable-calendar --with-curl=/usr/include/curl && \
+    make && \
+    make install
 
 #JDK
-RUN cd /tmp/src
-RUN ./j2sdk-1_4_2_12-linux-i586.bin
-RUN mv j2sdk1.4.2_12 /usr/local/j2sdk1.4.2_12
-RUN export JAVA_HOME=/usr/local/j2sdk1.4.2_12
+RUN cd /tmp/src && \
+    chmod 777 j2sdk-1_4_2_12-linux-i586.bin && \
+    yes | ./j2sdk-1_4_2_12-linux-i586.bin && \
+    mv j2sdk1.4.2_12 /usr/local/j2sdk1.4.2_12 && \
+    export JAVA_HOME=/usr/local/j2sdk1.4.2_12
 
 #FOP
-RUN cd /tmp/src
-RUN tar xvzf fop-0.20.5-src.tar.gz
-RUN cd fop-0.20.5
-RUN ./build.sh
+RUN cd /tmp/src && \
+    tar xvzf fop-0.20.5-src.tar.gz && \
+    cd fop-0.20.5 && \
+    export JAVA_HOME=/usr/local/j2sdk1.4.2_12 && \
+    ./build.sh
 
-RUN cd /tmp/src
-RUN rpm -i xorg-x11-deprecated-libs-6.8.2-31.i386.rpm 
-
-RUN mv fop-0.20.5 /usr/local/fop-0.20.5
+RUN cd /tmp/src && \
+    rpm -i xorg-x11-deprecated-libs-6.8.2-31.i386.rpm  && \
+    mv fop-0.20.5 /usr/local/fop-0.20.5
 
 #VARIABILI D'AMBIENTE
-RUN sed -i "s/'export PATH'//g" /root/.bash_profile 
-RUN sed -i "s/'PATH=$PATH:$HOME/bin'//g" /root/.bash_profile
-RUN echo 'PATH="/usr/local/fop-0.20.5/":$PATH:$HOME/bin' >> /root/.bash_profile
+RUN echo 'export PATH="/usr/local/fop-0.20.5/":$PATH:$HOME/bin' >> /root/.bash_profile
 RUN echo 'export JAVA_HOME="/usr/local/j2sdk1.4.2_12/"' >> /root/.bash_profile
-RUN echo 'export PATH' >> /root/.bash_profile
+
+#COPIO CONFIGURAZIONI APACHE/PHP
+COPY src/httpd.conf /etc/httpd/conf/httpd.conf
+COPY src/php.ini /usr/local/php-4.4.9/php.ini
 
 #AVVIO AUTOMATICO
 RUN chkconfig --level 345 httpd on
@@ -78,4 +72,4 @@ RUN chkconfig --level 345 httpd on
 VOLUME ["/var/www/html"]
 
 EXPOSE 80
-CMD ["/usr/sbin/init"]
+CMD ["/sbin/init"]
