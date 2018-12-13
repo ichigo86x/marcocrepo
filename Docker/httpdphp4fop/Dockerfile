@@ -65,6 +65,12 @@ RUN echo 'export JAVA_HOME="/usr/local/j2sdk1.4.2_12/"' >> /root/.bash_profile
 COPY src/httpd.conf /etc/httpd/conf/httpd.conf
 COPY src/php.ini /usr/local/php-4.4.9/php.ini
 
+#LOG TO STDIN e STDOUT
+RUN sed -ri \
+		-e 's!^(\s*CustomLog)\s+\S+!\1 /proc/self/fd/1!g' \
+		-e 's!^(\s*ErrorLog)\s+\S+!\1 /proc/self/fd/2!g' \
+        "/etc/httpd/conf/httpd.conf"
+
 #AVVIO AUTOMATICO
 RUN chkconfig --level 345 httpd on
 
