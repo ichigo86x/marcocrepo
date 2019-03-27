@@ -61,21 +61,32 @@ RUN cd /tmp/src && \
 RUN echo 'export PATH="/usr/local/fop-0.20.5/":$PATH:$HOME/bin' >> /root/.bash_profile
 RUN echo 'export JAVA_HOME="/usr/local/j2sdk1.4.2_12/"' >> /root/.bash_profile
 
+RUN mkdir /data/conf && \
+    mkdir /data/conf/httpd && \
+    mkdir /data/conf/php && \
+    mv /etc/httpd/conf /data/conf/httpd/ && \
+    mv /etc/httpd/conf.d /data/conf/httpd/ && \
+    ln -s /etc/httpd/conf /data/conf/httpd/conf && \
+    ln -s /etc/httpd/conf.d /data/conf/httpd/conf.d && \
+    rm -f /usr/local/php-4.4.9/php.ini && \
+    ln -s /usr/local/php-4.4.9/php.ini /data/conf/php/php.ini
+
 #COPIO CONFIGURAZIONI APACHE/PHP
-COPY src/httpd.conf /etc/httpd/conf/httpd.conf
-COPY src/php.ini /usr/local/php-4.4.9/php.ini
+COPY src/httpd.conf /data/conf/httpd/conf/httpd.conf
+COPY src/php.ini /data/conf/php/php.ini
 
 #LOG TO STDIN e STDOUT
-RUN sed -ri \
-		-e 's!^(\s*CustomLog)\s+\S+!\1 /proc/self/fd/1!g' \
-		-e 's!^(\s*ErrorLog)\s+\S+!\1 /proc/self/fd/2!g' \
-        "/etc/httpd/conf/httpd.conf"
+# RUN sed -ri \
+# 		-e 's!^(\s*CustomLog)\s+\S+!\1 /proc/self/fd/1!g' \
+# 		-e 's!^(\s*ErrorLog)\s+\S+!\1 /proc/self/fd/2!g' \
+#         "/etc/httpd/conf/httpd.conf"
 
 #AVVIO AUTOMATICO
 RUN chkconfig --level 345 httpd on
 
 #VOLUMES
 VOLUME ["/var/www/html"]
+VOLUME ["/data/conf"]
 
 EXPOSE 80
 CMD ["/sbin/init"]
