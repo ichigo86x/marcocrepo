@@ -61,7 +61,8 @@ RUN cd /tmp/src && \
 RUN echo 'export PATH="/usr/local/fop-0.20.5/":$PATH:$HOME/bin' >> /root/.bash_profile
 RUN echo 'export JAVA_HOME="/usr/local/j2sdk1.4.2_12/"' >> /root/.bash_profile
 
-RUN mkdir /data/conf && \
+RUN mkdir /data && \
+    mkdir /data/conf && \
     mkdir /data/conf/httpd && \
     mkdir /data/conf/php && \
     mv /etc/httpd/conf /data/conf/httpd/ && \
