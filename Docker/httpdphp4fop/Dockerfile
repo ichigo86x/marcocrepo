@@ -65,12 +65,12 @@ RUN mkdir /data && \
     mkdir /data/conf && \
     mkdir /data/conf/httpd && \
     mkdir /data/conf/php && \
-    mv /etc/httpd/conf /data/conf/httpd/ && \
-    mv /etc/httpd/conf.d /data/conf/httpd/ && \
-    ln -s /etc/httpd/conf /data/conf/httpd/conf && \
-    ln -s /etc/httpd/conf.d /data/conf/httpd/conf.d && \
-    rm -f /usr/local/php-4.4.9/php.ini && \
-    ln -s /usr/local/php-4.4.9/php.ini /data/conf/php/php.ini
+    mv /etc/httpd/conf /data/conf/httpd/conf && \
+    mv /etc/httpd/conf.d /data/conf/httpd/conf.d && \
+    ln -s /data/conf/httpd/conf /etc/httpd/conf && \
+    ln -s /data/conf/httpd/conf.d /etc/httpd/conf.d && \
+    rm -rf /usr/local/php-4.4.9/php.ini && \
+    ln -s /data/conf/php/php.ini /usr/local/php-4.4.9/php.ini
 
 #COPIO CONFIGURAZIONI APACHE/PHP
 COPY src/httpd.conf /data/conf/httpd/conf/httpd.conf
@@ -88,6 +88,7 @@ RUN chkconfig --level 345 httpd on
 #VOLUMES
 VOLUME ["/var/www/html"]
 VOLUME ["/data/conf"]
+VOLUME ["/var/log/httpd"]
 
 EXPOSE 80
 CMD ["/sbin/init"]
